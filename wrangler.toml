@@ -11,17 +11,15 @@ main = "worker.js"
 NODE_ENV = "production"
 
 # 浏览器绑定 - 用于 Puppeteer
-browser = { binding = "MYBROWSER" }
+binding = "MYBROWSER"
 
 # 生产环境配置
 [env.production]
 name = "young-web-shot-worker"
-browser = { binding = "MYBROWSER" }
 
 # 预览环境配置
 [env.preview]
 name = "young-web-shot-worker-preview"
-browser = { binding = "MYBROWSER" }
 
 
 # 日志观察配置
