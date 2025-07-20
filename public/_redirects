@@ -1,8 +1,2 @@
-# Static assets
-/_next/* /_next/:splat 200
-
-# API routes handled by Cloudflare Functions
-/api/* /api/:splat 200
-
-# Fallback for client-side routing
+# Fallback for all routes
 /* /index.html 200
