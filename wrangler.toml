@@ -10,8 +10,8 @@ main = "worker.js"
 NODE_ENV = "production"
 account_id = "e53afad7d4c6c735db4b50a7a5a51810"
 
-# Browser Rendering API binding
-browser = { binding = "MYBROWSER" }
+[browser]
+binding = "MYBROWSER"
 
 # 日志观察配置
 [observability.logs]

@@ -393,7 +393,8 @@ class ScreenshotService {
             console.log('Launching browser with binding:', typeof this.env.MYBROWSER);
             
             // 启动 Puppeteer 浏览器 - 使用正确的 Cloudflare Workers 方式
-            browser = await puppeteer.launch(this.env.MYBROWSER);
+            // browser = await puppeteer.launch(this.env.MYBROWSER);
+            browser = await puppeteer.launch();
 
             const page = await browser.newPage();
             
