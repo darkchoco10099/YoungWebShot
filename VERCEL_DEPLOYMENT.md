@@ -70,25 +70,25 @@ const nextConfig = {
 Error: The input directory "/var/task/.next/server/app/api/bin" does not exist.
 ```
 
-### 修复措施
+### 最新修复措施 (v2.0)
 
 1. **升级依赖包版本**
    - `@sparticuz/chromium`: `^123.0.1` → `^126.0.0`
    - `puppeteer-core`: `^22.10.0` → `^23.0.0`
 
-2. **增加内存配置**
+2. **优化内存和环境配置**
    - 函数内存：`1024MB` → `3008MB`
+   - 添加 `FONTCONFIG_PATH` 和 `LD_LIBRARY_PATH` 环境变量
+   - 移除错误的 `PUPPETEER_EXECUTABLE_PATH` 配置
 
-3. **添加环境变量**
-   - `PUPPETEER_EXECUTABLE_PATH`: 指定 Chromium 可执行文件路径
+3. **修正 Next.js 配置**
+   - 保留 `serverComponentsExternalPackages` 配置
+   - **关键修复**: 移除 webpack externals 中的 `@sparticuz/chromium`，允许其被正确打包
 
-4. **优化 Next.js 配置**
-   - 添加 `serverComponentsExternalPackages` 配置
-   - 配置 webpack externals
-
-5. **改进错误处理**
-   - 添加详细的调试日志
-   - 优先使用环境变量中的 Chromium 路径
+4. **增强错误处理和调试**
+   - 添加详细的环境信息日志
+   - 直接使用 `chromium.executablePath()` 而不依赖环境变量
+   - 提供更具体的错误诊断信息
 
 ## 📊 性能配置
 

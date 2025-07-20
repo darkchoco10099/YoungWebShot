@@ -188,20 +188,16 @@ export async function getOptions(isDev: boolean) {
     } else {
         // Vercel/生产环境配置
         try {
-            // 优先使用环境变量中的路径
-            let executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-            
-            if (!executablePath) {
-                // 如果环境变量未设置，则使用 @sparticuz/chromium
-                executablePath = await chromium.executablePath();
-            }
+            // 直接使用 @sparticuz/chromium 提供的路径
+            const executablePath = await chromium.executablePath();
             
             console.log('Chromium executable path:', executablePath);
             console.log('Environment variables:', {
                 NODE_ENV: process.env.NODE_ENV,
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD,
-                PUPPETEER_EXECUTABLE_PATH: process.env.PUPPETEER_EXECUTABLE_PATH
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
             });
+            console.log('Chromium args count:', chromium.args.length);
+            console.log('Platform:', process.platform, 'Arch:', process.arch);
             
             return {
                 args: [
@@ -227,11 +223,27 @@ export async function getOptions(isDev: boolean) {
         } catch (error: any) {
             console.error('Failed to get Chromium executable path:', error);
             console.error('Error details:', {
-                 message: error.message,
-                 stack: error.stack,
-                 chromiumPackage: '@sparticuz/chromium'
-             });
-            throw new Error(`Chromium setup failed in production environment. This might be due to missing @sparticuz/chromium package or incorrect Vercel configuration. Original error: ${error.message}`);
+                message: error.message,
+                stack: error.stack,
+                chromiumPackage: '@sparticuz/chromium',
+                nodeVersion: process.version,
+                platform: process.platform,
+                arch: process.arch,
+                cwd: process.cwd(),
+                env: {
+                    NODE_ENV: process.env.NODE_ENV,
+                    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD,
+                    FONTCONFIG_PATH: process.env.FONTCONFIG_PATH,
+                    LD_LIBRARY_PATH: process.env.LD_LIBRARY_PATH
+                }
+            });
+            
+            // 尝试提供更具体的错误信息
+            if (error.message.includes('does not exist')) {
+                throw new Error(`Chromium 可执行文件路径不存在。这通常是因为 @sparticuz/chromium 包版本不兼容或 Vercel 环境配置问题。请确保使用最新版本的 @sparticuz/chromium (当前: ^126.0.0)。原始错误: ${error.message}`);
+            }
+            
+            throw new Error(`Chromium 初始化失败: ${error.message}`);
         }
     }
 }

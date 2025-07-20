@@ -5,9 +5,12 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // 确保 @sparticuz/chromium 不被打包到客户端
+      // 允许 @sparticuz/chromium 被正确打包
       config.externals = config.externals || [];
-      config.externals.push('@sparticuz/chromium');
+      // 移除对 @sparticuz/chromium 的外部化，让它被打包进函数
+      config.externals = config.externals.filter(
+        (external) => external !== '@sparticuz/chromium'
+      );
     }
     return config;
   },

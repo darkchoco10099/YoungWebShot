@@ -9,7 +9,8 @@
   "env": {
     "NODE_ENV": "production",
     "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
-    "PUPPETEER_EXECUTABLE_PATH": "/opt/nodejs/node_modules/@sparticuz/chromium/bin"
+    "FONTCONFIG_PATH": "/var/task",
+    "LD_LIBRARY_PATH": "/var/task"
   },
   "build": {
     "env": {
