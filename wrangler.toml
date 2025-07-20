@@ -25,7 +25,7 @@ name = "young-web-shot-worker-preview"
 # memory_mb = 128
 
 # 浏览器绑定 - 用于 Puppeteer
-[browser]
+[[browser]]
 binding = "MYBROWSER"
 
 # 日志观察配置
