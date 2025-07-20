@@ -30,4 +30,4 @@ name = "young-web-shot-worker-preview"
 
 # 日志观察配置
 [observability.logs]
-enabled = false
+enabled = true
