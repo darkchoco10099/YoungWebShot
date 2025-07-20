@@ -1,4 +1,4 @@
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import { existsSync } from 'fs';
 
 // 浏览器类型定义
@@ -151,116 +151,50 @@ function getBrowserArgs(browserType: BrowserType): string[] {
 
 export async function getOptions(isDev: boolean) {
     if (isDev) {
+        // 开发环境：使用本地浏览器
         const preferredBrowser = getPreferredBrowser();
-        
         if (!preferredBrowser) {
-            const availability = checkBrowserAvailability();
-            throw new Error(
-                '未找到支持的浏览器。请安装以下任一浏览器：\n' +
-                '• Chrome: https://www.google.com/chrome/\n' +
-                '• Chromium: https://www.chromium.org/getting-involved/download-chromium/\n' +
-                '• Microsoft Edge: https://www.microsoft.com/edge\n' +
-                '• Safari: 系统自带（仅 macOS）'
-            );
+            throw new Error('未找到可用的浏览器。请安装 Chrome、Chromium 或 Edge。');
         }
-
-        const browserArgs = getBrowserArgs(preferredBrowser.type);
-        const options: any = {
-            args: browserArgs,
+        
+        console.log(`使用浏览器: ${preferredBrowser.name} (${preferredBrowser.path})`);
+        
+        return {
             executablePath: preferredBrowser.path,
             headless: true,
+            args: getBrowserArgs(preferredBrowser.type),
         };
-
-        // Safari 需要特殊处理
-        if (preferredBrowser.type === 'safari') {
-            // 注意：Safari 通过 puppeteer 的支持有限
-            // 可能需要使用 playwright 或其他工具
-            console.warn('警告：Safari 支持有限，建议使用 Chrome 或 Chromium');
-            options.headless = false; // Safari 不支持 headless 模式
-        }
-
-        // Edge 需要指定产品类型
-        if (preferredBrowser.type === 'edge') {
-            options.product = 'chrome'; // Edge 基于 Chromium
-        }
-
-        return options;
     } else {
-        // Vercel/生产环境配置
-        try {
-            // 直接使用 @sparticuz/chromium 提供的路径
-            const executablePath = await chromium.executablePath();
-            
-            console.log('Chromium executable path:', executablePath);
-            console.log('Environment variables:', {
-                NODE_ENV: process.env.NODE_ENV,
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-            });
-            console.log('Chromium args count:', chromium.args.length);
-            console.log('Platform:', process.platform, 'Arch:', process.arch);
-            
-            return {
-                args: [
-                    ...chromium.args,
-                    '--hide-scrollbars',
-                    '--disable-web-security',
-                    '--disable-features=VizDisplayCompositor',
-                    '--disable-background-timer-throttling',
-                    '--disable-backgrounding-occluded-windows',
-                    '--disable-renderer-backgrounding',
-                    '--force-color-profile=srgb',
-                    '--disable-extensions',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--single-process',
-                    '--disable-dev-shm-usage',
-                    '--disable-gpu',
-                    '--disable-software-rasterizer',
-                    '--disable-background-networking',
-                    '--disable-default-apps',
-                    '--disable-sync',
-                    '--disable-translate',
-                    '--hide-scrollbars',
-                    '--metrics-recording-only',
-                    '--mute-audio',
-                    '--no-default-browser-check',
-                    '--no-pings',
-                    '--password-store=basic',
-                    '--use-mock-keychain',
-                    '--disable-fre',
-                    '--disable-features=TranslateUI',
-                    '--disable-ipc-flooding-protection'
-                ],
-                defaultViewport: chromium.defaultViewport,
-                executablePath: executablePath,
-                headless: chromium.headless,
-                ignoreHTTPSErrors: true,
-                timeout: 30000,
-            };
-        } catch (error: any) {
-            console.error('Failed to get Chromium executable path:', error);
-            console.error('Error details:', {
-                message: error.message,
-                stack: error.stack,
-                chromiumPackage: '@sparticuz/chromium',
-                nodeVersion: process.version,
-                platform: process.platform,
-                arch: process.arch,
-                cwd: process.cwd(),
-                env: {
-                    NODE_ENV: process.env.NODE_ENV,
-                    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD,
-                    FONTCONFIG_PATH: process.env.FONTCONFIG_PATH,
-                    LD_LIBRARY_PATH: process.env.LD_LIBRARY_PATH
-                }
-            });
-            
-            // 尝试提供更具体的错误信息
-            if (error.message.includes('does not exist')) {
-                throw new Error(`Chromium 可执行文件路径不存在。这通常是因为 @sparticuz/chromium 包版本不兼容或 Vercel 环境配置问题。请确保使用最新版本的 @sparticuz/chromium (当前: ^126.0.0)。原始错误: ${error.message}`);
-            }
-            
-            throw new Error(`Chromium 初始化失败: ${error.message}`);
-        }
+        // 生产环境：使用 @sparticuz/chromium-min 和外部托管的 Chromium
+        // 使用 GitHub 托管的 Chromium 二进制文件，避免 libnss3.so 依赖问题
+        const chromiumUrl = 'https://github.com/Sparticuz/chromium/releases/download/v130.0.0/chromium-v130.0.0-pack.tar';
+        
+        return {
+            executablePath: await chromium.executablePath(chromiumUrl),
+            headless: chromium.headless,
+            args: [
+                ...chromium.args,
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-setuid-sandbox',
+                '--no-sandbox',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-ipc-flooding-protection',
+                '--disable-extensions',
+                '--disable-default-apps',
+                '--disable-sync',
+                '--disable-translate',
+                '--hide-scrollbars',
+                '--mute-audio',
+                '--no-first-run',
+                '--disable-background-networking',
+                '--single-process',
+                '--disable-features=site-per-process'
+            ],
+        };
     }
 }

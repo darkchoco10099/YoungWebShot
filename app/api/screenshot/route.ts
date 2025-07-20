@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getScreenshot } from '../../../lib/chromium';
+import { getReliableScreenshot, getAvailableServices } from '../../../lib/screenshot-service';
 
 // 上传截图到图床服务
 async function uploadScreenshotToImageBed(buffer: Buffer, url: string): Promise<string> {
@@ -82,15 +82,33 @@ export async function GET(req: NextRequest) {
 
     try {
         console.log(`Generating screenshot for: ${normalizedUrl}`);
-        const file = await getScreenshot(normalizedUrl, isDev);
+        console.log('Available services:', getAvailableServices());
+        
+        const result = await getReliableScreenshot(normalizedUrl, isDev, {
+            width: 1280,
+            height: 720,
+            format: 'png',
+            fullPage: false
+        });
+
+        console.log('Screenshot generated:', {
+            size: result.buffer.length,
+            source: result.metadata.source,
+            format: result.metadata.format
+        });
 
         // 上传截图到图床
-        const imageUrl = await uploadScreenshotToImageBed(file, normalizedUrl);
+        const imageUrl = await uploadScreenshotToImageBed(result.buffer, normalizedUrl);
 
         return NextResponse.json({
             success: true,
             url: imageUrl,
-            originalUrl: normalizedUrl
+            originalUrl: normalizedUrl,
+            metadata: {
+                source: result.metadata.source,
+                size: result.metadata.size,
+                format: result.metadata.format
+            }
         });
     } catch (e: any) {
         console.error('Screenshot generation failed:', e);
