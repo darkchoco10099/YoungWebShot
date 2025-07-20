@@ -1,4 +1,4 @@
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 import { existsSync } from 'fs';
 
 // 浏览器类型定义
@@ -165,10 +165,9 @@ export async function getOptions(isDev: boolean) {
             args: getBrowserArgs(preferredBrowser.type),
         };
     } else {
-        // 生产环境：使用 @sparticuz/chromium-min 和外部托管的 Chromium
-        // 使用 GitHub 托管的 Chromium 二进制文件，避免在 Vercel 上出现路径问题
-        const chromiumUrl = 'https://github.com/Sparticuz/chromium/releases/download/v130.0.0/chromium-v130.0.0-pack.tar';        return {
-            executablePath: await chromium.executablePath(chromiumUrl),
+        // 生产环境：使用 @sparticuz/chromium
+        return {
+            executablePath: await chromium.executablePath(),
             headless: chromium.headless,
             args: [
                 ...chromium.args,
