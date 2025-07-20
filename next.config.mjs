@@ -5,12 +5,18 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // 允许 @sparticuz/chromium 被正确打包
+      // 确保 @sparticuz/chromium 不被外部化
       config.externals = config.externals || [];
-      // 移除对 @sparticuz/chromium 的外部化，让它被打包进函数
-      config.externals = config.externals.filter(
-        (external) => external !== '@sparticuz/chromium'
-      );
+      if (Array.isArray(config.externals)) {
+        config.externals = config.externals.filter(
+          (external) => {
+            if (typeof external === 'string') {
+              return external !== '@sparticuz/chromium';
+            }
+            return true;
+          }
+        );
+      }
     }
     return config;
   },

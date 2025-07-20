@@ -5,12 +5,8 @@
       "memory": 3008
     }
   },
-  "regions": ["hnd1", "iad1", "sfo1"],
   "env": {
-    "NODE_ENV": "production",
-    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
-    "FONTCONFIG_PATH": "/var/task",
-    "LD_LIBRARY_PATH": "/var/task"
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
   },
   "build": {
     "env": {

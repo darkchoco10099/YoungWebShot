@@ -25,6 +25,7 @@
 ## 🔧 关键配置文件
 
 ### vercel.json
+
 ```json
 {
   "functions": {
@@ -33,7 +34,14 @@
       "memory": 3008
     }
   },
-  "regions": ["hnd1", "iad1", "sfo1"]
+  "env": {
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+  },
+  "build": {
+    "env": {
+      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    }
+  }
 }
 ```
 
@@ -45,12 +53,24 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
+      // 确保 @sparticuz/chromium 不被外部化
       config.externals = config.externals || [];
-      config.externals.push('@sparticuz/chromium');
+      if (Array.isArray(config.externals)) {
+        config.externals = config.externals.filter(
+          (external) => {
+            if (typeof external === 'string') {
+              return external !== '@sparticuz/chromium';
+            }
+            return true;
+          }
+        );
+      }
     }
     return config;
   },
 };
+
+export default nextConfig;
 ```
 
 ### package.json 依赖
@@ -70,25 +90,26 @@ const nextConfig = {
 Error: The input directory "/var/task/.next/server/app/api/bin" does not exist.
 ```
 
-### 最新修复措施 (v2.0)
+### 最新修复措施 (v3.0)
 
 1. **升级依赖包版本**
-   - `@sparticuz/chromium`: `^123.0.1` → `^126.0.0`
-   - `puppeteer-core`: `^22.10.0` → `^23.0.0`
+   - `@sparticuz/chromium`: `^126.0.0`
+   - `puppeteer-core`: `^23.0.0`
 
-2. **优化内存和环境配置**
-   - 函数内存：`1024MB` → `3008MB`
-   - 添加 `FONTCONFIG_PATH` 和 `LD_LIBRARY_PATH` 环境变量
-   - 移除错误的 `PUPPETEER_EXECUTABLE_PATH` 配置
+2. **简化 Vercel 配置**
+   - 内存设置为 3008MB
+   - 移除可能导致冲突的环境变量（`NODE_ENV`, `FONTCONFIG_PATH`, `LD_LIBRARY_PATH`）
+   - 移除 `regions` 配置以避免部署限制
+   - 仅保留必要的 `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
 
-3. **修正 Next.js 配置**
-   - 保留 `serverComponentsExternalPackages` 配置
-   - **关键修复**: 移除 webpack externals 中的 `@sparticuz/chromium`，允许其被正确打包
+3. **优化 Next.js Webpack 配置**
+   - 改进 externals 过滤逻辑，确保 `@sparticuz/chromium` 被正确打包
+   - 添加类型检查以避免配置错误
 
-4. **增强错误处理和调试**
-   - 添加详细的环境信息日志
-   - 直接使用 `chromium.executablePath()` 而不依赖环境变量
-   - 提供更具体的错误诊断信息
+4. **增强错误处理**
+   - 直接使用 `chromium.executablePath()` 获取路径
+   - 添加详细的调试信息和错误日志
+   - 本地构建测试通过
 
 ## 📊 性能配置
 
