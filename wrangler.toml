@@ -1,6 +1,7 @@
 name = "young-web-shot"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+browser = { binding = "MYBROWSER" }
 
 # Worker 脚本入口
 main = "worker.js"
@@ -9,11 +10,6 @@ main = "worker.js"
 [vars]
 NODE_ENV = "production"
 account_id = "e53afad7d4c6c735db4b50a7a5a51810"
-
-#[browser]
-#binding = "MYBROWSER"
-
-browser = { binding = "MYBROWSER" }
 
 
 # 日志观察配置
