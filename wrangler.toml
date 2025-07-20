@@ -10,7 +10,7 @@ main = "worker.js"
 [vars]
 NODE_ENV = "production"
 
-# 浏览器绑定 - 用于 Puppeteer
+[[browser]]
 binding = "MYBROWSER"
 
 # 生产环境配置
