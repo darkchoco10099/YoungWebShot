@@ -167,7 +167,7 @@ export async function getOptions(isDev: boolean) {
     } else {
         // 生产环境：使用 @sparticuz/chromium-min 和外部托管的 Chromium
         // 使用 GitHub 托管的 Chromium 二进制文件，避免在 Vercel 上出现路径问题
-        const chromiumUrl = 'https://github.com/Sparticuz/chromium/releases/tag/v130.0.0/chromium-v130.0.0-pack.tar';        return {
+        const chromiumUrl = 'https://github.com/Sparticuz/chromium/releases/download/v130.0.0/chromium-v130.0.0-pack.tar';        return {
             executablePath: await chromium.executablePath(chromiumUrl),
             headless: chromium.headless,
             args: [
