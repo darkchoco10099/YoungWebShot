@@ -426,8 +426,16 @@ class ScreenshotService {
 
             console.log('Screenshot completed, size:', screenshot.byteLength, 'bytes');
 
-            // 上传截图到图床
-            const imageUrl = await this.uploadScreenshotToImageBed(screenshot, normalizedUrl);
+            // 尝试上传截图到图床，如果失败则返回 base64 数据
+            let imageUrl;
+            try {
+                imageUrl = await this.uploadScreenshotToImageBed(screenshot, normalizedUrl);
+            } catch (uploadError) {
+                console.warn('Image upload failed, returning base64 data:', uploadError.message);
+                // 如果上传失败，返回 base64 编码的图片数据
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(screenshot)));
+                imageUrl = `data:image/png;base64,${base64}`;
+            }
 
             return {
                 success: true,
