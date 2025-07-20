@@ -390,7 +390,8 @@ class ScreenshotService {
                 throw new Error('Browser binding not available. Please check wrangler.toml configuration.');
             }
             
-            browser = await puppeteer.launch(this.env.MYBROWSER, {
+            browser = await puppeteer.launch({
+                browser: this.env.MYBROWSER,
                 keep_alive: 60000, // 保持连接 60 秒
             });
 
