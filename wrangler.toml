@@ -22,14 +22,6 @@ browser = { binding = "MYBROWSER" }
 name = "young-web-shot-worker-preview"
 browser = { binding = "MYBROWSER" }
 
-# 资源限制 (免费计划不支持 CPU 限制)
-# [limits]
-# CPU 时间限制（毫秒）- 仅付费计划支持
-# cpu_ms = 30000
-# 内存限制（MB）- 仅付费计划支持
-# memory_mb = 128
-[vars]
-CLOUDFLARE_ACCOUNT_ID = "e53afad7d4c6c735db4b50a7a5a51810"
 # 日志观察配置
 [observability.logs]
 enabled = true
