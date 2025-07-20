@@ -12,7 +12,7 @@ account_id = "e53afad7d4c6c735db4b50a7a5a51810"
 
 #[browser]
 #binding = "MYBROWSER"
-[[unsafe.bindings]]
+[[bindings]]
 name = "MYBROWSER"  # 必须全部大写
 type = "browser"    # 必须是"browser"类型
 
