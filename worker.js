@@ -386,14 +386,31 @@ class ScreenshotService {
         let browser;
         try {
             // 启动 Puppeteer 浏览器
-            if (!this.env.MYBROWSER) {
+            let browserBinding = this.env.MYBROWSER;
+            
+            // 调试信息
+            console.log('env.MYBROWSER:', this.env.MYBROWSER);
+            console.log('env.browser:', this.env.browser);
+            
+            // 如果 MYBROWSER 不可用，尝试从 browser 环境变量中获取
+            if (!browserBinding && this.env.browser) {
+                console.log('Using browser binding from env.browser');
+                // 如果 env.browser 是对象，尝试获取其 binding 属性
+                if (typeof this.env.browser === 'object' && this.env.browser.binding) {
+                    console.log('env.browser is object, using binding property');
+                    // 这里不应该使用 binding 属性，而是直接使用 env.browser 对象
+                    browserBinding = this.env.browser;
+                } else {
+                    browserBinding = this.env.browser;
+                }
+            }
+            
+            if (!browserBinding) {
                 throw new Error('Browser binding not available. Please check wrangler.toml configuration.');
             }
             
-            browser = await puppeteer.launch({
-                browser: this.env.MYBROWSER,
-                keep_alive: 60000, // 保持连接 60 秒
-            });
+            console.log('Final browserBinding:', browserBinding);
+            browser = await puppeteer.launch(browserBinding);
 
             const page = await browser.newPage();
             
