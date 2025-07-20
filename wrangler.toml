@@ -28,7 +28,8 @@ browser = { binding = "MYBROWSER" }
 # cpu_ms = 30000
 # 内存限制（MB）- 仅付费计划支持
 # memory_mb = 128
-
+[vars]
+CLOUDFLARE_ACCOUNT_ID = "e53afad7d4c6c735db4b50a7a5a51810"
 # 日志观察配置
 [observability.logs]
 enabled = true
