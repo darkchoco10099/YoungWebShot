@@ -22,6 +22,7 @@ browser = { binding = "MYBROWSER" }
 name = "young-web-shot-worker-preview"
 browser = { binding = "MYBROWSER" }
 
+
 # 日志观察配置
 [observability.logs]
 enabled = true
