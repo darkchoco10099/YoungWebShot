@@ -1,19 +1,19 @@
 # 截图服务配置指南
 
-本项目支持多种截图实现方式，提供可靠的后备方案来解决 Vercel 环境中的 Chromium 依赖问题。
+本项目支持多种截图实现方式，提供可靠的后备方案来解决 Cloudflare Pages 环境中的 Chromium 依赖问题。
 
 ## 🎯 支持的截图服务
 
 ### Puppeteer + @sparticuz/chromium-min (主要方案)
 - **优点**: 完全控制，功能强大，免费
-- **缺点**: 在某些 Vercel 环境中可能遇到依赖问题
+- **缺点**: 在某些无服务器环境中可能遇到依赖问题
 - **配置**: 无需额外配置
 
 ## 🔧 环境变量配置
 
-### Vercel 环境变量设置
+### Cloudflare Pages 环境变量设置
 
-在 Vercel Dashboard 中设置以下环境变量：
+在 Cloudflare Pages Dashboard 中设置以下环境变量：
 
 ```bash
 # 必需的基础配置
@@ -78,7 +78,7 @@ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 ### 调试信息
 
-在 Vercel 函数日志中查看：
+在 Cloudflare Pages 函数日志中查看：
 - 可用服务列表
 - 使用的截图源
 - 错误详情和重试过程
@@ -95,7 +95,7 @@ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 如果经常遇到截图问题，建议：
 
-1. **升级 Vercel 计划**：获得更多资源和更长超时时间
+1. **优化函数配置**：调整内存和超时设置以获得更好性能
 2. **使用专业截图服务**：如 Bannerbear、Placid 等
 3. **自建截图服务**：在 VPS 上部署 Puppeteer 服务
 4. **使用 Playwright**：可能在某些环境中更稳定

@@ -1,0 +1,19 @@
+name = "young-web-shot"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "npm run pages:build"
+
+[build.environment_variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+NODE_ENV = "production"
+
+[[pages_build_output_dir]]
+value = ".next"
+
+[env.production]
+name = "young-web-shot"
+
+[env.preview]
+name = "young-web-shot-preview"

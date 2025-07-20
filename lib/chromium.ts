@@ -1,7 +1,7 @@
 import puppeteer, { Browser, Page } from 'puppeteer-core';
 import { getOptions, checkBrowserAvailability } from './chromium-options';
 
-// 在Vercel等无服务器环境中，不应该复用页面实例
+// 在Cloudflare Pages等无服务器环境中，不应该复用页面实例
 // 每次请求都应该创建新的浏览器实例以避免内存泄漏
 
 export async function getScreenshot(url: string, isDev: boolean): Promise<Buffer> {
@@ -92,9 +92,9 @@ export async function getScreenshot(url: string, isDev: boolean): Promise<Buffer
         
         const errorMessage = error?.message || '';
         
-        // 针对 Vercel 部署的特殊错误处理
+        // 针对 Cloudflare Pages 部署的特殊错误处理
         if (!isDev && errorMessage.includes('does not exist')) {
-            throw new Error(`Vercel 部署错误: Chromium 可执行文件未找到。请检查 @sparticuz/chromium 包是否正确安装和配置。原始错误: ${errorMessage}`);
+            throw new Error(`Cloudflare Pages 部署错误: Chromium 可执行文件未找到。请检查 @sparticuz/chromium 包是否正确安装和配置。原始错误: ${errorMessage}`);
         }
         
         if (errorMessage.includes('Navigation timeout')) {

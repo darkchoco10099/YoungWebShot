@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Puppeteer-23.0.0-green?style=for-the-badge&logo=puppeteer" alt="Puppeteer">
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/Vercel-Ready-black?style=for-the-badge&logo=vercel" alt="Vercel">
+  <img src="https://img.shields.io/badge/Cloudflare_Pages-Ready-orange?style=for-the-badge&logo=cloudflare" alt="Cloudflare Pages">
 </div>
 
 <div align="center">
@@ -36,7 +36,7 @@
 - 📊 **可视化仪表板** - 直观的截图管理和历史记录
 
 ### 🚀 **部署友好**
-- ☁️ **Vercel 优化** - 专为 Vercel 无服务器环境优化
+- ☁️ **Cloudflare Pages 优化** - 专为 Cloudflare Pages 边缘计算优化
 - 🔧 **环境自适应** - 开发和生产环境自动配置
 - 📦 **零配置部署** - 一键部署到云平台
 - 🔍 **浏览器自动检测** - 智能检测系统可用浏览器
@@ -93,29 +93,29 @@
 
 ### 🌐 生产部署
 
-#### Vercel 部署 (推荐)
+#### Cloudflare Pages 部署 (推荐)
 
-> 🎉 **最新更新**: 已修复 Vercel 部署中的 Chromium 路径问题！
+> 🎉 **最新更新**: 已完全迁移到 Cloudflare Pages，享受更快的边缘计算性能！
 
 1. **Fork 本仓库**
-2. **连接到 Vercel**
+2. **连接到 Cloudflare Pages**
 3. **自动部署**
-   - Vercel 会自动检测 Next.js 项目
-   - 使用项目中的 `vercel.json` 配置
+   - Cloudflare Pages 会自动检测 Next.js 项目
+   - 使用项目中的 `wrangler.toml` 配置
    - 自动安装 `@sparticuz/chromium` 依赖
 
 4. **验证部署**
    ```bash
-   curl "https://your-app.vercel.app/api/screenshot?url=example.com"
+   curl "https://your-app.pages.dev/api/screenshot?url=example.com"
    ```
 
-**🔧 修复的问题**:
-- ✅ 解决了 `The input directory "/var/task/.next/server/app/api/bin" does not exist` 错误
-- ✅ 升级 `@sparticuz/chromium` 到 v126.0.0
-- ✅ 优化内存配置 (3008MB)
+**🔧 优化特性**:
+- ✅ 全球边缘计算网络，响应更快
+- ✅ 升级 `@sparticuz/chromium` 到 v130.0.0
+- ✅ 优化内存和性能配置
 - ✅ 改进错误处理和日志记录
 
-> ⚠️ **部署问题？** 查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md) 或 [故障排除指南](./DEPLOYMENT_TROUBLESHOOTING.md)
+> ⚠️ **部署问题？** 查看 [Cloudflare Pages 部署指南](./CLOUDFLARE_PAGES_DEPLOYMENT.md)
 
 **环境变量配置**
 
@@ -126,9 +126,9 @@
 
 #### 其他平台部署
 
+- **Vercel**: 支持（需要配置函数）
 - **Netlify**: 支持（需要配置函数）
 - **Railway**: 支持
-- **Heroku**: 支持（需要 buildpack）
 - **Docker**: 提供 Dockerfile
 
 ```bash
@@ -236,7 +236,7 @@ takeScreenshot('https://example.com')
 # 开发环境配置
 NODE_ENV=development
 
-# Vercel 部署配置 (自动设置)
+# Cloudflare Pages 部署配置 (自动设置)
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # 图床服务配置
@@ -285,7 +285,7 @@ young-web-shot/
 │   └── utils.ts           # 工具函数
 ├── public/                # 静态资源
 ├── .env.example           # 环境变量示例
-├── vercel.json            # Vercel 配置
+├── wrangler.toml          # Cloudflare Pages 配置
 └── README.md              # 项目文档
 ```
 
@@ -351,10 +351,10 @@ export async function customScreenshot(
 - 确认目标网站可访问
 - 增加超时时间配置
 
-#### 4. Vercel 部署问题
+#### 4. Cloudflare Pages 部署问题
 **解决方案**:
 - 确保设置了 `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
-- 检查 `vercel.json` 配置
+- 检查 `wrangler.toml` 配置
 - 查看部署日志排查具体错误
 
 ### 调试模式

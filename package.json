@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 5555",
-    "build": "next build",
+    "build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build"
+    "pages:build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build",
+    "pages:dev": "next dev"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

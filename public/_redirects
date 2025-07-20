@@ -1,0 +1,11 @@
+# API routes
+/api/* /.next/server/pages/api/:splat 200
+
+# Next.js pages
+/* /.next/server/pages/:splat 200
+
+# Static files
+/_next/* /.next/static/:splat 200
+
+# Fallback for SPA
+/* /index.html 200
