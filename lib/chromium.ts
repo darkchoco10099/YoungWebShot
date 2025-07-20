@@ -4,7 +4,7 @@ import { getOptions, checkBrowserAvailability } from './chromium-options';
 // 在Vercel等无服务器环境中，不应该复用页面实例
 // 每次请求都应该创建新的浏览器实例以避免内存泄漏
 
-export async function getScreenshot(url: string, isDev: boolean) {
+export async function getScreenshot(url: string, isDev: boolean): Promise<Buffer> {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
@@ -77,7 +77,7 @@ export async function getScreenshot(url: string, isDev: boolean) {
         }
 
         console.log('Taking screenshot...');
-        const screenshot = await page.screenshot(screenshotOptions);
+        const screenshot = await page.screenshot(screenshotOptions) as unknown as Buffer;
         console.log('Screenshot completed, size:', screenshot.length, 'bytes');
 
         return screenshot;

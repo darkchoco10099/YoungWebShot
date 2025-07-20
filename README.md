@@ -23,6 +23,12 @@
 - 🛡️ **智能错误处理** - 详细的错误诊断和用户友好的提示信息
 - 🌐 **URL 智能解析** - 自动标准化和验证输入的网址
 
+### ☁️ **云端图床集成**
+- 📤 **自动上传** - 截图完成后自动上传到图床服务
+- 🚀 **CDN 加速** - 基于 Cloudflare R2 的全球 CDN 分发
+- 🔗 **永久链接** - 返回稳定的图片 URL，支持长期访问
+- 💾 **无本地存储** - 减少服务器存储压力，提高性能
+
 ### 🎨 **现代化界面**
 - 💎 **精美 UI 设计** - 基于 shadcn/ui 和 Tailwind CSS 的现代界面
 - 📱 **响应式布局** - 完美适配桌面端和移动端
@@ -146,8 +152,17 @@ curl "http://localhost:3000/api/screenshot?url=https://www.google.com"
 ```
 
 **响应**:
-- **成功**: 返回 PNG 格式的图片数据
+- **成功**: 返回包含图片 URL 的 JSON 数据
 - **失败**: 返回 JSON 格式的错误信息
+
+**成功响应示例**:
+```json
+{
+  "success": true,
+  "imageUrl": "https://cdn.example.com/screenshots/abc123.png",
+  "uploadedAt": "2024-01-01T12:00:00Z"
+}
+```
 
 **错误代码**:
 | 状态码 | 说明 |
@@ -178,9 +193,8 @@ async function takeScreenshot(url) {
     const response = await fetch(`/api/screenshot?url=${encodeURIComponent(url)}`);
     
     if (response.ok) {
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      return imageUrl;
+      const result = await response.json();
+      return result.imageUrl; // 返回图床链接
     } else {
       const error = await response.json();
       throw new Error(error.error);
@@ -194,7 +208,8 @@ async function takeScreenshot(url) {
 // 使用示例
 takeScreenshot('https://example.com')
   .then(imageUrl => {
-    console.log('截图成功:', imageUrl);
+    console.log('截图成功，图片链接:', imageUrl);
+    // imageUrl 是永久可访问的图床链接
   })
   .catch(error => {
     console.error('截图失败:', error);
@@ -215,6 +230,13 @@ NODE_ENV=development
 
 # Vercel 部署配置 (自动设置)
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# 图床服务配置
+CLOUDFLARE_R2_ACCESS_KEY_ID=your_access_key
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your_secret_key
+CLOUDFLARE_R2_BUCKET_NAME=your_bucket_name
+CLOUDFLARE_R2_ENDPOINT=your_r2_endpoint
+CLOUDFLARE_R2_PUBLIC_URL=your_public_cdn_url
 ```
 
 ### 浏览器配置

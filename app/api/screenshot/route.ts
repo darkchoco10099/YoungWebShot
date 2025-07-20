@@ -1,6 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScreenshot } from '../../../lib/chromium';
 
+// 上传截图到图床服务
+async function uploadScreenshotToImageBed(buffer: Buffer, url: string): Promise<string> {
+  try {
+    // 创建 FormData
+    const formData = new FormData();
+    const blob = new Blob([buffer], { type: 'image/png' });
+    
+    // 生成文件名（基于URL和时间戳）
+    const urlHash = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
+    const timestamp = Date.now();
+    const fileName = `screenshot_${urlHash}_${timestamp}.png`;
+    
+    formData.append('file', blob, fileName);
+    formData.append('prefix', 'screenshots');
+
+    // 调用图床上传接口
+    const uploadResponse = await fetch('https://image.darkchoco.top/api/r2/upload-url', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`图床上传失败: ${uploadResponse.status}`);
+    }
+
+    const result = await uploadResponse.json();
+    
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    return result.url;
+  } catch (error: any) {
+    console.error('图床上传错误:', error);
+    throw new Error(`图片上传失败: ${error.message}`);
+  }
+}
+
 const isDev = process.env.NODE_ENV !== 'production';
 
 // URL验证函数
@@ -46,11 +84,13 @@ export async function GET(req: NextRequest) {
         console.log(`Generating screenshot for: ${normalizedUrl}`);
         const file = await getScreenshot(normalizedUrl, isDev);
 
-        return new NextResponse(file, {
-            headers: {
-                'Content-Type': 'image/png',
-                'Cache-Control': 'public, immutable, no-transform, s-maxage=31536000, max-age=31536000',
-            },
+        // 上传截图到图床
+        const imageUrl = await uploadScreenshotToImageBed(file, normalizedUrl);
+
+        return NextResponse.json({
+            success: true,
+            url: imageUrl,
+            originalUrl: normalizedUrl
         });
     } catch (e: any) {
         console.error('Screenshot generation failed:', e);

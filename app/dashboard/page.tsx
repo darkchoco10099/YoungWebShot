@@ -62,21 +62,25 @@ export default function Dashboard() {
       const res = await fetch(`/api/screenshot?url=${encodeURIComponent(url)}`);
       
       if (res.ok) {
-        const blob = await res.blob();
-        const newImageUrl = URL.createObjectURL(blob);
-        setImageUrl(newImageUrl);
+        const data = await res.json();
         
-        // 自动保存到历史记录
-        const newScreenshot: Screenshot = {
-          id: Date.now().toString(),
-          url,
-          imageUrl: newImageUrl,
-          timestamp: new Date(),
-          title: extractDomain(url)
-        };
-        
-        const updatedScreenshots = [newScreenshot, ...screenshots];
-        saveScreenshots(updatedScreenshots);
+        if (data.success && data.url) {
+          setImageUrl(data.url);
+          
+          // 自动保存到历史记录
+          const newScreenshot: Screenshot = {
+            id: Date.now().toString(),
+            url,
+            imageUrl: data.url,
+            timestamp: new Date(),
+            title: extractDomain(url)
+          };
+          
+          const updatedScreenshots = [newScreenshot, ...screenshots];
+          saveScreenshots(updatedScreenshots);
+        } else {
+          setError(data.error || '截图生成失败');
+        }
       } else {
         // 处理API错误响应
         try {
@@ -99,11 +103,24 @@ export default function Dashboard() {
     saveScreenshots(updatedScreenshots);
   };
 
-  const downloadScreenshot = (screenshot: Screenshot) => {
-    const link = document.createElement('a');
-    link.href = screenshot.imageUrl;
-    link.download = `screenshot-${screenshot.title}-${screenshot.timestamp.toISOString().split('T')[0]}.png`;
-    link.click();
+  const downloadScreenshot = async (screenshot: Screenshot) => {
+    try {
+      const response = await fetch(screenshot.imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `screenshot-${screenshot.title}-${screenshot.timestamp.toISOString().split('T')[0]}.png`;
+      link.click();
+      
+      // 清理临时URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('下载失败:', error);
+      // 如果下载失败，直接打开图片链接
+      window.open(screenshot.imageUrl, '_blank');
+    }
   };
 
   const formatDate = (date: Date) => {
