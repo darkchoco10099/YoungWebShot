@@ -394,7 +394,7 @@ class ScreenshotService {
             
             // 启动 Puppeteer 浏览器 - 使用正确的 Cloudflare Workers 方式
             // browser = await puppeteer.launch(this.env.MYBROWSER);
-            const browser = env.MYBROWSER;  // 注意：不需要 await
+            const browser = this.env.MYBROWSER;  // 注意：不需要 await
 
             console.log('Browser launched successfully.',browser);
 
