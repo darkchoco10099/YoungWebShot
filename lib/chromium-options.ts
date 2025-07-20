@@ -165,12 +165,9 @@ export async function getOptions(isDev: boolean) {
             args: getBrowserArgs(preferredBrowser.type),
         };
     } else {
-        // 生产环境：使用 @sparticuz/chromium-min 和外部托管的 Chromium
-        // 使用 GitHub 托管的 Chromium 二进制文件，避免 libnss3.so 依赖问题
-        const chromiumUrl = 'https://github.com/Sparticuz/chromium/releases/download/v130.0.0/chromium-v130.0.0-pack.tar';
-        
+        // 生产环境：使用 @sparticuz/chromium-min 内置的 Chromium
         return {
-            executablePath: await chromium.executablePath(chromiumUrl),
+            executablePath: await chromium.executablePath(),
             headless: chromium.headless,
             args: [
                 ...chromium.args,

@@ -40,15 +40,10 @@
 - 配置外部 Chromium 二进制文件 (GitHub CDN)
 - 添加 `--single-process` 和 `--disable-features=site-per-process` 参数
 
-**后备方案 1：htmlcsstoimage.com**
-- 专业截图服务，免费 50 张/月
-- 需要配置 `HCTI_API_KEY` 环境变量
-- 高稳定性，适合生产环境
-
-**后备方案 2：screenshotapi.net**
-- 快速截图服务，免费 100 张/月
-- 需要配置 `SCREENSHOTAPI_TOKEN` 环境变量
-- 作为最后的后备选择
+**解决方案：优化 Puppeteer 配置**
+- 使用 @sparticuz/chromium-min 内置的 Chromium
+- 移除外部 URL 依赖
+- 确保在 Vercel 环境中的稳定性
 
 #### 3. 关键技术改进
 
@@ -82,11 +77,7 @@ executablePath: 'https://github.com/Sparticuz/chromium/releases/download/v130.0.
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ```
 
-**可选配置（推荐）：**
-```bash
-HCTI_API_KEY=your_htmlcsstoimage_api_key
-SCREENSHOTAPI_TOKEN=your_screenshotapi_token
-```
+
 
 ### 验证状态
 - ✅ 本地依赖安装测试通过
