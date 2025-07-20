@@ -6,8 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 main = "worker.js"
 
 # 浏览器绑定 - 用于 Puppeteer
-[browser]
-binding = "MYBROWSER"
+browser = { binding = "MYBROWSER" }
 
 # 环境变量
 [vars]
