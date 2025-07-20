@@ -3,7 +3,7 @@
     "app/api/screenshot/route.ts": {
       "maxDuration": 60,
       "memory": 1024,
-      "includeFiles": "node_modules/@sparticuz/chromium-min/bin/**"
+      "includeFiles": "node_modules/@sparticuz/chromium-min/build/**"
     }
   },
   "build": {
