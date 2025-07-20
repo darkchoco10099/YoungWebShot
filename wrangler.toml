@@ -27,3 +27,7 @@ name = "young-web-shot-worker-preview"
 # cpu_ms = 30000
 # 内存限制（MB）- 仅付费计划支持
 # memory_mb = 128
+
+# 日志观察配置
+[observability.logs]
+enabled = false
