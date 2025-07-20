@@ -2,7 +2,7 @@ import chromium from '@sparticuz/chromium';
 import { existsSync } from 'fs';
 
 // 浏览器类型定义
-type BrowserType = 'chrome' | 'chromium' | 'safari'|'edge';
+type BrowserType = 'chrome' | 'chromium' | 'edge' | 'safari';
 
 interface BrowserInfo {
   path: string;
@@ -187,22 +187,34 @@ export async function getOptions(isDev: boolean) {
         return options;
     } else {
         // Vercel/生产环境配置
-        return {
-            args: [
-                ...chromium.args,
-                '--hide-scrollbars',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-renderer-backgrounding',
-                '--force-color-profile=srgb',
-                '--disable-extensions'
-            ],
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless,
-            ignoreHTTPSErrors: true,
-        };
+        try {
+            const executablePath = await chromium.executablePath();
+            console.log('Chromium executable path:', executablePath);
+            
+            return {
+                args: [
+                    ...chromium.args,
+                    '--hide-scrollbars',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor',
+                    '--disable-background-timer-throttling',
+                    '--disable-backgrounding-occluded-windows',
+                    '--disable-renderer-backgrounding',
+                    '--force-color-profile=srgb',
+                    '--disable-extensions',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process'
+                ],
+                defaultViewport: chromium.defaultViewport,
+                executablePath: executablePath,
+                headless: chromium.headless,
+                ignoreHTTPSErrors: true,
+                timeout: 30000,
+            };
+        } catch (error: any) {
+            console.error('Failed to get Chromium executable path:', error);
+            throw new Error(`Chromium setup failed: ${error.message}`);
+        }
     }
 }

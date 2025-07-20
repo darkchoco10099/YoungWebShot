@@ -9,6 +9,14 @@ export async function getScreenshot(url: string, isDev: boolean) {
     let page: Page | null = null;
 
     try {
+        // 环境信息日志
+        console.log('Screenshot request:', {
+            url,
+            isDev,
+            nodeEnv: process.env.NODE_ENV,
+            platform: process.platform
+        });
+
         // 在开发环境下检查浏览器可用性
         if (isDev) {
             const availability = checkBrowserAvailability();
@@ -19,8 +27,16 @@ export async function getScreenshot(url: string, isDev: boolean) {
         }
 
         const options = await getOptions(isDev);
+        console.log('Browser options:', {
+            executablePath: options.executablePath,
+            argsCount: options.args?.length || 0,
+            headless: options.headless
+        });
         browser = await puppeteer.launch(options);
+        console.log('Browser launched successfully');
+        
         page = await browser.newPage();
+        console.log('New page created');
 
         // 设置更长的超时时间，适应网络延迟
         await page.setDefaultTimeout(30000);
@@ -39,10 +55,12 @@ export async function getScreenshot(url: string, isDev: boolean) {
         );
 
         // 导航到目标URL，等待网络空闲
+        console.log('Navigating to URL:', url);
         await page.goto(url, {
-            waitUntil: 'networkidle0',
-            timeout: 30000
+            waitUntil: isDev ? 'networkidle0' : 'domcontentloaded',
+            timeout: isDev ? 30000 : 25000
         });
+        console.log('Page loaded successfully');
 
         // 等待页面完全加载
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -58,20 +76,46 @@ export async function getScreenshot(url: string, isDev: boolean) {
             screenshotOptions.quality = 90;
         }
 
+        console.log('Taking screenshot...');
         const screenshot = await page.screenshot(screenshotOptions);
+        console.log('Screenshot completed, size:', screenshot.length, 'bytes');
 
         return screenshot;
-    } catch (error) {
-        console.error('Screenshot generation failed:', error);
+    } catch (error: any) {
+        console.error('Screenshot error details:', {
+            message: error?.message || 'Unknown error',
+            stack: error?.stack,
+            url,
+            isDev,
+            timestamp: new Date().toISOString()
+        });
+        
+        const errorMessage = error?.message || '';
+        
+        // 针对 Vercel 部署的特殊错误处理
+        if (!isDev && errorMessage.includes('does not exist')) {
+            throw new Error(`Vercel 部署错误: Chromium 可执行文件未找到。请检查 @sparticuz/chromium 包是否正确安装和配置。原始错误: ${errorMessage}`);
+        }
+        
+        if (errorMessage.includes('Navigation timeout')) {
+            throw new Error(`页面加载超时: ${url}。请检查网址是否可访问或尝试增加超时时间。`);
+        }
+        
+        if (errorMessage.includes('net::ERR_')) {
+            throw new Error(`网络错误: 无法访问 ${url}。请检查网址是否正确。`);
+        }
+        
         throw error;
     } finally {
         // 确保资源被正确释放
         try {
             if (page) {
                 await page.close();
+                console.log('Page closed');
             }
             if (browser) {
                 await browser.close();
+                console.log('Browser closed');
             }
         } catch (cleanupError) {
             console.error('Error during cleanup:', cleanupError);

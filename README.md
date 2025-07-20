@@ -89,20 +89,33 @@
 
 #### Vercel 部署 (推荐)
 
-1. **一键部署**
-   
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/young-web-shot)
+1. **Fork 本仓库**
+2. **连接到 Vercel**
+3. **自动部署**
+   - Vercel 会自动检测 Next.js 项目
+   - 使用项目中的 `vercel.json` 配置
+   - 自动安装 `@sparticuz/chromium` 依赖
 
-2. **手动部署**
+4. **验证部署**
    ```bash
-   # 安装 Vercel CLI
-   npm i -g vercel
-   
-   # 部署到 Vercel
-   vercel --prod
+   curl "https://your-app.vercel.app/api/screenshot?url=example.com"
    ```
 
+> ⚠️ **部署问题？** 查看 [部署故障排除指南](./DEPLOYMENT_TROUBLESHOOTING.md)
+
+**环境变量配置**
+
+| 变量名 | 值 | 说明 |
+|--------|----|----------|
+| `NODE_ENV` | `production` | 生产环境标识 |
+| `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` | `true` | 跳过 Chromium 下载 |
+
 #### 其他平台部署
+
+- **Netlify**: 支持（需要配置函数）
+- **Railway**: 支持
+- **Heroku**: 支持（需要 buildpack）
+- **Docker**: 提供 Dockerfile
 
 ```bash
 # 构建生产版本
