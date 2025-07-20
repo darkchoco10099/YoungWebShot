@@ -1,11 +1,8 @@
-# API routes
-/api/* /.next/server/pages/api/:splat 200
+# Static assets
+/_next/* /_next/:splat 200
 
-# Next.js pages
-/* /.next/server/pages/:splat 200
+# API routes handled by Cloudflare Functions
+/api/* /api/:splat 200
 
-# Static files
-/_next/* /.next/static/:splat 200
-
-# Fallback for SPA
+# Fallback for client-side routing
 /* /index.html 200
