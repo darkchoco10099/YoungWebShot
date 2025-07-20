@@ -21,9 +21,9 @@ name = "young-web-shot-worker"
 [env.preview]
 name = "young-web-shot-worker-preview"
 
-# 资源限制
-[limits]
-# CPU 时间限制（毫秒）
-cpu_ms = 30000
-# 内存限制（MB）
-memory_mb = 128
+# 资源限制 (免费计划不支持 CPU 限制)
+# [limits]
+# CPU 时间限制（毫秒）- 仅付费计划支持
+# cpu_ms = 30000
+# 内存限制（MB）- 仅付费计划支持
+# memory_mb = 128
