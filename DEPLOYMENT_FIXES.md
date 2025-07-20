@@ -24,7 +24,31 @@
 - 使用最新版本的 `@sparticuz/chromium` (^126.0.0)
 - 确保 webpack 配置正确处理外部包
 
-## 🛠️ 最新修复措施 (v3.0)
+## 🛠️ 最新修复措施 (v3.1)
+
+### 关键修复内容
+1. **依赖包升级**：
+   - 升级 `@sparticuz/chromium` 到 `^130.0.0`
+   - 升级 `puppeteer-core` 到 `^23.8.0`
+2. **解决 libnss3.so 缺失问题**：
+   - 添加更多 Chromium 启动参数以处理共享库依赖
+   - 增强内存管理和进程隔离
+   - 优化 Vercel 环境兼容性
+3. **简化 Vercel 配置**：
+   - 移除冲突的环境变量（`NODE_ENV`、`FONTCONFIG_PATH`、`LD_LIBRARY_PATH`）
+   - 移除 `regions` 配置，避免地区限制问题
+   - 仅保留必要的 `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
+   - 增加内存分配到 3008MB
+4. **优化 Next.js Webpack 配置**：
+   - 改进 externals 过滤逻辑
+   - 确保 `@sparticuz/chromium` 不被错误外部化
+   - 添加类型检查
+5. **增强错误处理和调试信息**
+
+### 验证状态
+- ✅ 本地依赖安装测试通过
+- ✅ 本地构建测试通过
+- 🔄 等待 Vercel 部署验证
 
 ### 配置文件更新
 
