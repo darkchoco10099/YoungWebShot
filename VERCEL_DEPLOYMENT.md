@@ -1,90 +1,171 @@
 # Vercel 部署指南
 
-本项目已针对 Vercel 部署进行了优化，以下是部署说明和注意事项。
+本项目已针对 Vercel 部署进行了优化配置，解决了 Chromium 路径问题。
 
 ## 🚀 快速部署
 
-1. **连接 GitHub 仓库**
-   - 登录 [Vercel Dashboard](https://vercel.com/dashboard)
-   - 点击 "New Project"
-   - 导入你的 GitHub 仓库
+### 1. 连接 GitHub 仓库
+- 登录 [Vercel Dashboard](https://vercel.com/dashboard)
+- 点击 "New Project"
+- 选择你的 GitHub 仓库
+- Vercel 会自动检测配置并开始部署
 
-2. **配置环境变量**
-   ```
-   NODE_ENV=production
-   PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-   ```
+### 2. 环境变量（自动配置）
+项目已通过 `vercel.json` 自动配置所需环境变量：
+```json
+{
+  "env": {
+    "NODE_ENV": "production",
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_EXECUTABLE_PATH": "/opt/nodejs/node_modules/@sparticuz/chromium/bin"
+  }
+}
+```
 
-3. **部署设置**
-   - Build Command: `npm run vercel-build`
-   - Output Directory: `.next`
-   - Install Command: `npm install`
+## 🔧 关键配置文件
 
-## 📋 技术优化
+### vercel.json
+```json
+{
+  "functions": {
+    "app/api/screenshot/route.ts": {
+      "maxDuration": 30,
+      "memory": 3008
+    }
+  },
+  "regions": ["hnd1", "iad1", "sfo1"]
+}
+```
 
-### 截图功能改进
+### next.config.mjs
+```javascript
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['@sparticuz/chromium'],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('@sparticuz/chromium');
+    }
+    return config;
+  },
+};
+```
 
-- **无服务器适配**: 每次请求创建新的浏览器实例，避免内存泄漏
-- **资源管理**: 自动清理浏览器和页面实例
-- **超时优化**: 设置 30 秒超时，适应网络延迟
-- **性能优化**: 禁用不必要的功能，提高截图速度
+### package.json 依赖
+```json
+{
+  "dependencies": {
+    "@sparticuz/chromium": "^126.0.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}
+```
 
-### Vercel 配置
+## 🛠️ 问题修复说明
 
-- **函数超时**: 设置为 30 秒，确保有足够时间生成截图
-- **区域选择**: 使用 `hnd1` (东京) 区域，提供更好的亚洲访问速度
-- **Chromium 优化**: 使用 `@sparticuz/chromium` 包，专为无服务器环境优化
+### 原始错误
+```
+Error: The input directory "/var/task/.next/server/app/api/bin" does not exist.
+```
 
-## ⚠️ 注意事项
+### 修复措施
 
-1. **函数限制**
-   - Vercel 免费版函数执行时间限制为 10 秒
-   - Pro 版本可以设置最长 60 秒
-   - 建议升级到 Pro 版本以获得更好的体验
+1. **升级依赖包版本**
+   - `@sparticuz/chromium`: `^123.0.1` → `^126.0.0`
+   - `puppeteer-core`: `^22.10.0` → `^23.0.0`
 
-2. **内存使用**
-   - 截图功能需要较多内存
-   - 复杂页面可能需要更长时间加载
+2. **增加内存配置**
+   - 函数内存：`1024MB` → `3008MB`
 
-3. **网络限制**
-   - 某些网站可能阻止无头浏览器访问
-   - 建议测试目标网站的兼容性
+3. **添加环境变量**
+   - `PUPPETEER_EXECUTABLE_PATH`: 指定 Chromium 可执行文件路径
 
-## 🔧 故障排除
+4. **优化 Next.js 配置**
+   - 添加 `serverComponentsExternalPackages` 配置
+   - 配置 webpack externals
 
-### 常见问题
+5. **改进错误处理**
+   - 添加详细的调试日志
+   - 优先使用环境变量中的 Chromium 路径
 
-1. **超时错误**
-   ```
-   解决方案: 检查目标网站是否可访问，或增加超时时间
-   ```
+## 📊 性能配置
 
-2. **内存不足**
-   ```
-   解决方案: 简化页面内容，或升级 Vercel 计划
-   ```
+### 函数配置
+- **最大执行时间**: 30秒
+- **内存分配**: 3008MB
+- **地区**: 东京(hnd1)、弗吉尼亚(iad1)、旧金山(sfo1)
 
-3. **Chromium 启动失败**
-   ```
-   解决方案: 确保 @sparticuz/chromium 版本兼容
-   ```
+### 优化建议
+1. **缓存策略**: 考虑实现截图缓存
+2. **并发控制**: 避免同时处理过多请求
+3. **错误重试**: 实现智能重试机制
 
-### 调试模式
+## 🔍 监控和调试
 
-在开发环境中，错误信息会显示详细信息。生产环境中，错误信息会被简化以保护系统安全。
+### 查看部署日志
+1. 进入 Vercel Dashboard
+2. 选择项目 → Functions 标签
+3. 查看 `screenshot` 函数的执行日志
 
-## 📊 性能监控
+### 常见日志信息
+```
+Chromium executable path: /opt/nodejs/node_modules/@sparticuz/chromium/bin
+Environment variables: {
+  NODE_ENV: 'production',
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true',
+  PUPPETEER_EXECUTABLE_PATH: '/opt/nodejs/node_modules/@sparticuz/chromium/bin'
+}
+```
 
-建议在 Vercel Dashboard 中监控以下指标：
-- 函数执行时间
-- 内存使用情况
-- 错误率
-- 响应时间
+## ⚠️ 常见问题
 
-## 🔄 更新部署
+### 1. 部署失败
+**症状**: 构建过程中出错
+**解决**: 
+- 确保 `package.json` 中的依赖版本正确
+- 检查 `next.config.mjs` 配置
 
-每次推送到主分支时，Vercel 会自动重新部署。确保在推送前测试所有功能。
+### 2. 函数超时
+**症状**: 截图请求超过30秒
+**解决**:
+- 检查目标网站加载速度
+- 考虑增加 `maxDuration` 设置
 
----
+### 3. 内存不足
+**症状**: 函数因内存不足而终止
+**解决**:
+- 当前已配置3008MB，通常足够
+- 如仍不足，可考虑优化截图参数
 
-如有问题，请查看 [Vercel 文档](https://vercel.com/docs) 或提交 Issue。
+### 4. Chromium 路径错误
+**症状**: 找不到 Chromium 可执行文件
+**解决**:
+- 确认 `@sparticuz/chromium` 版本为 `^126.0.0`
+- 检查 `vercel.json` 中的环境变量配置
+
+## 🎯 测试部署
+
+部署完成后，测试 API 接口：
+
+```bash
+curl "https://your-domain.vercel.app/api/screenshot?url=example.com"
+```
+
+预期响应：
+```json
+{
+  "success": true,
+  "url": "https://pub-xxxxxxxx.r2.dev/screenshots/screenshot_abc123_1234567890.png",
+  "originalUrl": "https://example.com"
+}
+```
+
+## 📚 更多资源
+
+- [Vercel 函数文档](https://vercel.com/docs/functions)
+- [@sparticuz/chromium 文档](https://github.com/Sparticuz/chromium)
+- [Puppeteer 文档](https://pptr.dev/)
+
+如遇到其他问题，请参考 [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md)。

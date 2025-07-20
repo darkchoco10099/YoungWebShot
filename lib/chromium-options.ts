@@ -188,8 +188,20 @@ export async function getOptions(isDev: boolean) {
     } else {
         // Vercel/生产环境配置
         try {
-            const executablePath = await chromium.executablePath();
+            // 优先使用环境变量中的路径
+            let executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+            
+            if (!executablePath) {
+                // 如果环境变量未设置，则使用 @sparticuz/chromium
+                executablePath = await chromium.executablePath();
+            }
+            
             console.log('Chromium executable path:', executablePath);
+            console.log('Environment variables:', {
+                NODE_ENV: process.env.NODE_ENV,
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD,
+                PUPPETEER_EXECUTABLE_PATH: process.env.PUPPETEER_EXECUTABLE_PATH
+            });
             
             return {
                 args: [
@@ -214,7 +226,12 @@ export async function getOptions(isDev: boolean) {
             };
         } catch (error: any) {
             console.error('Failed to get Chromium executable path:', error);
-            throw new Error(`Chromium setup failed: ${error.message}`);
+            console.error('Error details:', {
+                 message: error.message,
+                 stack: error.stack,
+                 chromiumPackage: '@sparticuz/chromium'
+             });
+            throw new Error(`Chromium setup failed in production environment. This might be due to missing @sparticuz/chromium package or incorrect Vercel configuration. Original error: ${error.message}`);
         }
     }
 }

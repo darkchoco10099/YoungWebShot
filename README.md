@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Next.js-14.2.3-black?style=for-the-badge&logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Puppeteer-22.10.0-green?style=for-the-badge&logo=puppeteer" alt="Puppeteer">
+  <img src="https://img.shields.io/badge/Puppeteer-23.0.0-green?style=for-the-badge&logo=puppeteer" alt="Puppeteer">
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Vercel-Ready-black?style=for-the-badge&logo=vercel" alt="Vercel">
 </div>
@@ -49,7 +49,7 @@
 |------|------|------|
 | **Next.js** | 14.2.3 | React 全栈框架 |
 | **TypeScript** | 5.0+ | 类型安全开发 |
-| **Puppeteer Core** | 22.10.0 | 浏览器自动化 |
+| **Puppeteer Core** | 23.0.0 | 浏览器自动化 |
 | **Tailwind CSS** | 3.4.1 | 原子化 CSS 框架 |
 | **shadcn/ui** | Latest | 现代 UI 组件库 |
 | **Radix UI** | Latest | 无障碍 UI 基础组件 |
@@ -95,6 +95,8 @@
 
 #### Vercel 部署 (推荐)
 
+> 🎉 **最新更新**: 已修复 Vercel 部署中的 Chromium 路径问题！
+
 1. **Fork 本仓库**
 2. **连接到 Vercel**
 3. **自动部署**
@@ -107,7 +109,13 @@
    curl "https://your-app.vercel.app/api/screenshot?url=example.com"
    ```
 
-> ⚠️ **部署问题？** 查看 [部署故障排除指南](./DEPLOYMENT_TROUBLESHOOTING.md)
+**🔧 修复的问题**:
+- ✅ 解决了 `The input directory "/var/task/.next/server/app/api/bin" does not exist` 错误
+- ✅ 升级 `@sparticuz/chromium` 到 v126.0.0
+- ✅ 优化内存配置 (3008MB)
+- ✅ 改进错误处理和日志记录
+
+> ⚠️ **部署问题？** 查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md) 或 [故障排除指南](./DEPLOYMENT_TROUBLESHOOTING.md)
 
 **环境变量配置**
 
