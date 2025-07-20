@@ -1,41 +1,28 @@
 {
-  "name": "young-web-shot",
-  "version": "0.1.0",
-  "private": true,
+  "name": "young-web-shot-worker",
+  "version": "1.0.0",
+  "description": "网页截图服务 - Cloudflare Worker 版本",
+  "main": "worker.js",
   "scripts": {
-    "dev": "next dev -p 5555",
-    "build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build",
-    "start": "next start",
-    "lint": "next lint",
-    "pages:build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build",
-    "pages:dev": "next dev"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --env preview",
+    "tail": "wrangler tail",
+    "test": "wrangler dev --local"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.14",
-    "@radix-ui/react-dropdown-menu": "^2.1.15",
-    "@radix-ui/react-label": "^2.1.7",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@sparticuz/chromium": "^130.0.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.525.0",
-    "next": "14.2.3",
-    "puppeteer-core": "^23.8.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "shadcn-ui": "^0.9.5",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7"
+    "@cloudflare/puppeteer": "^0.0.5"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.4.19",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.3",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+    "wrangler": "^3.78.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "screenshot",
+    "puppeteer",
+    "web-scraping"
+  ],
+  "author": "Young Web Shot",
+  "license": "MIT"
 }

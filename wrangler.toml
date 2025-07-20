@@ -1,11 +1,29 @@
-name = "young-web-shot"
+name = "young-web-shot-worker"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-pages_build_output_dir = ".next"
+# Worker 脚本入口
+main = "worker.js"
 
+# 浏览器绑定 - 用于 Puppeteer
+[browser]
+binding = "MYBROWSER"
+
+# 环境变量
+[vars]
+NODE_ENV = "production"
+
+# 生产环境配置
 [env.production]
-name = "young-web-shot"
+name = "young-web-shot-worker"
 
+# 预览环境配置
 [env.preview]
-name = "young-web-shot-preview"
+name = "young-web-shot-worker-preview"
+
+# 资源限制
+[limits]
+# CPU 时间限制（毫秒）
+cpu_ms = 30000
+# 内存限制（MB）
+memory_mb = 128
