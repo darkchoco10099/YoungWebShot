@@ -1,5 +1,4 @@
 name = "young-web-shot"
-account_id = "e53afad7d4c6c735db4b50a7a5a51810"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -9,18 +8,9 @@ main = "worker.js"
 # 环境变量
 [vars]
 NODE_ENV = "production"
+account_id = "e53afad7d4c6c735db4b50a7a5a51810"
 
-[browser]
-binding = "MYBROWSER"
-
-# 生产环境配置
-[env.production]
-name = "young-web-shot-worker"
-
-# 预览环境配置
-[env.preview]
-name = "young-web-shot-worker-preview"
-
+browser = { binding = "MYBROWSER" }
 
 # 日志观察配置
 [observability.logs]
