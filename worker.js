@@ -381,10 +381,15 @@ class ScreenshotService {
         }
 
         console.log(`Generating screenshot for: ${normalizedUrl}`);
+        console.log('Browser binding available:', !!this.env.MYBROWSER);
         
         let browser;
         try {
             // 启动 Puppeteer 浏览器
+            if (!this.env.MYBROWSER) {
+                throw new Error('Browser binding not available. Please check wrangler.toml configuration.');
+            }
+            
             browser = await puppeteer.launch(this.env.MYBROWSER, {
                 keep_alive: 60000, // 保持连接 60 秒
             });
