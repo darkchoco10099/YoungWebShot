@@ -773,12 +773,12 @@ export default {
                 });
             }
         
-        // 检查是否是手动触发的启动通知请求
-        const url = new URL(request.url);
-        if (url.pathname === '/health' && url.searchParams.get('startup') === 'true') {
-            // 发送部署成功通知
-            await barkService.sendDeploymentSuccess();
-        }
+            // 检查是否是手动触发的启动通知请求
+            const url = new URL(request.url);
+            if (url.pathname === '/health' && url.searchParams.get('startup') === 'true') {
+                // 发送部署成功通知
+                await barkService.sendDeploymentSuccess();
+            }
         
         // 主页路由
         router.get('/', async () => {
