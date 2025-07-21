@@ -57,6 +57,19 @@ class BarkNotificationService {
         );
     }
 
+    // 发送部署失败通知
+    async sendDeploymentFailure(error = '') {
+        await this.sendNotification(
+            '❌ Worker 部署失败',
+            `YoungWebShot 截图服务部署失败${error ? '\n错误: ' + error : ''}`,
+            {
+                sound: 'error',
+                icon: '❌',
+                group: 'Deployment'
+            }
+        );
+    }
+
     // 发送服务状态通知
     async sendServiceStatus(status, details = '') {
         const isHealthy = status === 'healthy';
@@ -740,14 +753,27 @@ class Router {
     }
 }
 
+// 全局变量用于跟踪是否已发送部署通知
+let deploymentNotificationSent = false;
+
 // 主要的 Worker 处理函数
 export default {
     async fetch(request, env) {
-        const router = new Router();
-        const screenshotService = new ScreenshotService(env);
-        const barkService = new BarkNotificationService(env);
+        try {
+            const router = new Router();
+            const screenshotService = new ScreenshotService(env);
+            const barkService = new BarkNotificationService(env);
+            
+            // 在首次请求时发送部署成功通知
+            if (!deploymentNotificationSent) {
+                deploymentNotificationSent = true;
+                // 异步发送部署成功通知，不阻塞请求处理
+                barkService.sendDeploymentSuccess().catch(error => {
+                    console.error('Failed to send deployment notification:', error);
+                });
+            }
         
-        // 检查是否是首次启动（通过特殊的健康检查请求）
+        // 检查是否是手动触发的启动通知请求
         const url = new URL(request.url);
         if (url.pathname === '/health' && url.searchParams.get('startup') === 'true') {
             // 发送部署成功通知
@@ -894,7 +920,30 @@ export default {
              });
          });
         
-        // 处理请求
-        return await router.handle(request, env);
+            // 处理请求
+            return await router.handle(request, env);
+            
+        } catch (error) {
+            console.error('Worker error:', error);
+            
+            // 发送部署失败通知（仅在首次错误时）
+            if (!deploymentNotificationSent) {
+                deploymentNotificationSent = true;
+                const barkService = new BarkNotificationService(env);
+                barkService.sendDeploymentFailure(error.message).catch(notifyError => {
+                    console.error('Failed to send deployment failure notification:', notifyError);
+                });
+            }
+            
+            // 返回错误响应
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Internal server error',
+                message: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
     }
 };
