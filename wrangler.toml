@@ -5,7 +5,7 @@ browser = { binding = "MYBROWSER" }
 
 # 自定义域名路由
 routes = [
-  { pattern = "webshot.darkchoco.top/*", custom_domain = true }
+  { pattern = "webshot.darkchoco.top", custom_domain = true }
 ]
 
 # Worker 脚本入口
