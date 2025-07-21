@@ -469,6 +469,145 @@ class ScreenshotService {
             }
         }
     }
+
+    // 批量生成截图 - 在单次浏览器会话中处理多个页面
+    async generateBatchScreenshots(urls) {
+        if (!Array.isArray(urls) || urls.length === 0) {
+            throw new Error('URLs must be a non-empty array');
+        }
+
+        if (urls.length > 10) {
+            throw new Error('Maximum 10 URLs allowed per batch request');
+        }
+
+        console.log(`Generating batch screenshots for ${urls.length} URLs`);
+        console.log('Browser binding available:', !!this.env.MYBROWSER);
+        
+        let browser;
+        const results = [];
+        
+        try {
+            // 检查浏览器绑定是否可用
+            if (!this.env.MYBROWSER) {
+                throw new Error('Browser binding not available. Please check wrangler.toml configuration.');
+            }
+            
+            // 启动浏览器（只启动一次）
+            browser = await puppeteer.launch(this.env.MYBROWSER);
+            console.log('Browser launched successfully for batch processing');
+
+            // 为每个 URL 生成截图
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                const normalizedUrl = this.normalizeUrl(url.trim());
+                
+                try {
+                    if (!this.isValidUrl(normalizedUrl)) {
+                        results.push({
+                            success: false,
+                            originalUrl: url,
+                            error: 'Invalid URL format'
+                        });
+                        continue;
+                    }
+
+                    console.log(`Processing URL ${i + 1}/${urls.length}: ${normalizedUrl}`);
+                    
+                    // 创建新页面
+                    const page = await browser.newPage();
+                    
+                    // 设置视口
+                    await page.setViewport({ 
+                        width: 1280, 
+                        height: 720,
+                        deviceScaleFactor: 1
+                    });
+
+                    // 设置用户代理
+                    await page.setUserAgent(
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    );
+
+                    // 导航到目标URL
+                    await page.goto(normalizedUrl, {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 25000
+                    });
+
+                    // 等待页面完全加载
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    // 截图
+                    const screenshot = await page.screenshot({
+                        type: 'png',
+                        fullPage: false,
+                    });
+
+                    console.log(`Screenshot ${i + 1} completed, size:`, screenshot.byteLength, 'bytes');
+
+                    // 尝试上传截图到图床
+                    let imageUrl;
+                    try {
+                        imageUrl = await this.uploadScreenshotToImageBed(screenshot, normalizedUrl);
+                    } catch (uploadError) {
+                        console.warn(`Image upload failed for URL ${i + 1}, returning base64 data:`, uploadError.message);
+                        const base64 = btoa(String.fromCharCode(...new Uint8Array(screenshot)));
+                        imageUrl = `data:image/png;base64,${base64}`;
+                    }
+
+                    results.push({
+                        success: true,
+                        url: imageUrl,
+                        originalUrl: normalizedUrl,
+                        metadata: {
+                            source: 'puppeteer',
+                            size: screenshot.byteLength,
+                            format: 'png',
+                            batchIndex: i + 1
+                        }
+                    });
+
+                    // 关闭页面释放内存
+                    await page.close();
+                    
+                } catch (error) {
+                    console.error(`Screenshot generation failed for URL ${i + 1}:`, error);
+                    
+                    let errorMessage = 'Failed to generate screenshot';
+                    
+                    if (error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
+                        errorMessage = 'Website not found. Please check the URL and try again.';
+                    } else if (error.message.includes('net::ERR_CONNECTION_REFUSED')) {
+                        errorMessage = 'Connection refused. The website may be down or blocking requests.';
+                    } else if (error.message.includes('TimeoutError')) {
+                        errorMessage = 'Request timeout. The website took too long to respond.';
+                    }
+                    
+                    results.push({
+                        success: false,
+                        originalUrl: url,
+                        error: errorMessage
+                    });
+                }
+            }
+
+            return {
+                success: true,
+                totalRequested: urls.length,
+                totalSuccessful: results.filter(r => r.success).length,
+                totalFailed: results.filter(r => !r.success).length,
+                results: results
+            };
+            
+        } catch (error) {
+            console.error('Batch screenshot generation failed:', error);
+            throw new Error(`Batch screenshot failed: ${error.message}`);
+        } finally {
+            if (browser) {
+                await browser.close();
+            }
+        }
+    }
 }
 
 // 路由处理器
@@ -561,16 +700,81 @@ export default {
             }
         });
         
-        // 健康检查路由
-        router.get('/health', async () => {
-            return new Response(JSON.stringify({
-                status: 'ok',
-                timestamp: new Date().toISOString(),
-                service: 'screenshot-worker'
-            }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
+        // 批量截图 API 路由
+        router.post('/api/screenshots/batch', async (request) => {
+            try {
+                const requestBody = await request.json();
+                const { urls } = requestBody;
+                
+                if (!urls || !Array.isArray(urls)) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Request body must contain a "urls" array'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                if (urls.length === 0) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'URLs array cannot be empty'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                if (urls.length > 10) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Maximum 10 URLs allowed per batch request'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                const result = await screenshotService.generateBatchScreenshots(urls);
+                return new Response(JSON.stringify(result), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+            } catch (error) {
+                console.error('Batch screenshot API error:', error);
+                
+                // 处理 JSON 解析错误
+                if (error.message.includes('JSON')) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Invalid JSON in request body'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                return new Response(JSON.stringify({
+                    success: false,
+                    error: error.message
+                }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
         });
+        
+        // 健康检查路由
+         router.get('/health', async () => {
+             return new Response(JSON.stringify({
+                 status: 'ok',
+                 timestamp: new Date().toISOString(),
+                 service: 'screenshot-worker'
+             }), {
+                 headers: { 'Content-Type': 'application/json' }
+             });
+         });
         
         // 处理请求
         return await router.handle(request, env);
