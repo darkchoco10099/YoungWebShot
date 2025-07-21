@@ -11,7 +11,7 @@
     "test": "wrangler dev --local"
   },
   "dependencies": {
-    "@cloudflare/puppeteer": "^0.0.5"
+    "@cloudflare/puppeteer": "^1.0.3"
   },
   "devDependencies": {
     "wrangler": "^4.25.0"
