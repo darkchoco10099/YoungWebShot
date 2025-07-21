@@ -3,6 +3,91 @@
 
 import puppeteer from '@cloudflare/puppeteer';
 
+// Bark 通知服务
+class BarkNotificationService {
+    constructor(env) {
+        this.barkUrl = env.BARK_URL;
+    }
+
+    async sendNotification(title, body, options = {}) {
+        if (!this.barkUrl) {
+            console.log('Bark URL not configured, skipping notification');
+            return;
+        }
+
+        try {
+            const payload = {
+                title: title,
+                body: body,
+                sound: options.sound || 'default',
+                icon: options.icon || 'https://cdn-icons-png.flaticon.com/512/1828/1828833.png',
+                group: options.group || 'YoungWebShot',
+                url: options.url || '',
+                ...options
+            };
+
+            const response = await fetch(this.barkUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                console.log('📱 Bark notification sent successfully:', title);
+            } else {
+                console.warn('⚠️ Bark notification failed:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('❌ Bark notification error:', error.message);
+        }
+    }
+
+    // 发送部署成功通知
+    async sendDeploymentSuccess() {
+        await this.sendNotification(
+            '🚀 Worker 部署成功',
+            'YoungWebShot 截图服务已成功部署并正在运行',
+            {
+                sound: 'success',
+                icon: '🚀',
+                group: 'Deployment'
+            }
+        );
+    }
+
+    // 发送服务状态通知
+    async sendServiceStatus(status, details = '') {
+        const isHealthy = status === 'healthy';
+        await this.sendNotification(
+            isHealthy ? '✅ 服务运行正常' : '⚠️ 服务异常',
+            `YoungWebShot 截图服务状态: ${status}${details ? '\n' + details : ''}`,
+            {
+                sound: isHealthy ? 'default' : 'alarm',
+                icon: isHealthy ? '✅' : '⚠️',
+                group: 'ServiceStatus'
+            }
+        );
+    }
+
+    // 发送截图统计通知
+    async sendScreenshotStats(count, type = 'single') {
+        const emoji = type === 'batch' ? '📊' : '📸';
+        const typeText = type === 'batch' ? '批量截图' : '单张截图';
+        
+        await this.sendNotification(
+            `${emoji} ${typeText}完成`,
+            `已成功生成 ${count} 张截图`,
+            {
+                sound: 'default',
+                icon: emoji,
+                group: 'Screenshots'
+            }
+        );
+    }
+}
+
 // HTML 模板 - 完整的前端界面
 const HTML_TEMPLATE = `
 <!DOCTYPE html>
@@ -660,6 +745,14 @@ export default {
     async fetch(request, env) {
         const router = new Router();
         const screenshotService = new ScreenshotService(env);
+        const barkService = new BarkNotificationService(env);
+        
+        // 检查是否是首次启动（通过特殊的健康检查请求）
+        const url = new URL(request.url);
+        if (url.pathname === '/health' && url.searchParams.get('startup') === 'true') {
+            // 发送部署成功通知
+            await barkService.sendDeploymentSuccess();
+        }
         
         // 主页路由
         router.get('/', async () => {
@@ -685,6 +778,12 @@ export default {
             
             try {
                 const result = await screenshotService.generateScreenshot(targetUrl);
+                
+                // 如果截图成功，发送统计通知
+                if (result.success) {
+                    await barkService.sendScreenshotStats(1, 'single');
+                }
+                
                 return new Response(JSON.stringify(result), {
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -737,6 +836,12 @@ export default {
                 }
                 
                 const result = await screenshotService.generateBatchScreenshots(urls);
+                
+                // 如果有成功的截图，发送统计通知
+                if (result.success && result.totalSuccessful > 0) {
+                    await barkService.sendScreenshotStats(result.totalSuccessful, 'batch');
+                }
+                
                 return new Response(JSON.stringify(result), {
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -766,12 +871,25 @@ export default {
         });
         
         // 健康检查路由
-         router.get('/health', async () => {
-             return new Response(JSON.stringify({
+         router.get('/health', async (request) => {
+             const url = new URL(request.url);
+             const shouldNotify = url.searchParams.get('notify') === 'true';
+             const isStartup = url.searchParams.get('startup') === 'true';
+             
+             const healthData = {
                  status: 'ok',
                  timestamp: new Date().toISOString(),
-                 service: 'screenshot-worker'
-             }), {
+                 service: 'screenshot-worker',
+                 version: '2.0.0',
+                 features: ['single-screenshot', 'batch-screenshot', 'bark-notifications']
+             };
+             
+             // 如果需要发送通知
+             if (shouldNotify && !isStartup) {
+                 await barkService.sendServiceStatus('healthy', '服务运行正常，所有功能可用');
+             }
+             
+             return new Response(JSON.stringify(healthData), {
                  headers: { 'Content-Type': 'application/json' }
              });
          });

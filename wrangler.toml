@@ -15,6 +15,9 @@ main = "worker.js"
 [vars]
 NODE_ENV = "production"
 account_id = "e53afad7d4c6c735db4b50a7a5a51810"
+# Bark 推送配置 (可选)
+# 格式: https://api.day.app/YOUR_KEY
+BARK_URL = "https://bark.darkchoco.top/tAJWRkmn9PeDsyqUZ4ceK3"
 
 
 # 日志观察配置
