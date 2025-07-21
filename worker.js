@@ -6,7 +6,7 @@ import puppeteer from '@cloudflare/puppeteer';
 // Bark 通知服务
 class BarkNotificationService {
     constructor(env) {
-        this.barkUrl = env.BARK_URL;
+        this.barkUrl = this.env.BARK_URL;
     }
 
     async sendNotification(title, body, options = {}) {
