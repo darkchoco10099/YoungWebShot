@@ -3,6 +3,11 @@ compatibility_date = "2024-06-02"
 compatibility_flags = ["nodejs_compat"]
 browser = { binding = "MYBROWSER" }
 
+# 自定义域名路由
+routes = [
+  { pattern = "webshot.darkchoco.top/*", custom_domain = true }
+]
+
 # Worker 脚本入口
 main = "worker.js"
 
