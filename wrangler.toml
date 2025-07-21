@@ -1,5 +1,5 @@
 name = "young-web-shot"
-compatibility_date = "2024-12-01"
+compatibility_date = "2024-06-02"
 compatibility_flags = ["nodejs_compat"]
 browser = { binding = "MYBROWSER" }
 
