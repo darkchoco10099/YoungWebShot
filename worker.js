@@ -32,7 +32,7 @@ class BarkNotificationService {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(payload)
-            });
+                       });
 
             if (response.ok) {
                 console.log('📱 Bark notification sent successfully:', title);
@@ -780,145 +780,145 @@ export default {
                 await barkService.sendDeploymentSuccess();
             }
         
-        // 主页路由
-        router.get('/', async () => {
-            return new Response(HTML_TEMPLATE, {
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            // 主页路由
+            router.get('/', async () => {
+                return new Response(HTML_TEMPLATE, {
+                    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                });
             });
-        });
         
-        // 截图 API 路由
-        router.get('/api/screenshot', async (request) => {
-            const url = new URL(request.url);
-            const targetUrl = url.searchParams.get('url');
-            
-            if (!targetUrl) {
-                return new Response(JSON.stringify({
-                    success: false,
-                    error: 'URL parameter is required'
-                }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            
-            try {
-                const result = await screenshotService.generateScreenshot(targetUrl);
+            // 截图 API 路由
+            router.get('/api/screenshot', async (request) => {
+                const url = new URL(request.url);
+                const targetUrl = url.searchParams.get('url');
                 
-                // 如果截图成功，发送统计通知
-                if (result.success) {
-                    await barkService.sendScreenshotStats(1, 'single');
+                if (!targetUrl) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'URL parameter is required'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
                 }
                 
-                return new Response(JSON.stringify(result), {
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (error) {
-                console.error('Screenshot API error:', error);
-                return new Response(JSON.stringify({
-                    success: false,
-                    error: error.message
-                }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-        });
+                try {
+                    const result = await screenshotService.generateScreenshot(targetUrl);
+                    
+                    // 如果截图成功，发送统计通知
+                    if (result.success) {
+                        await barkService.sendScreenshotStats(1, 'single');
+                    }
+                    
+                    return new Response(JSON.stringify(result), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } catch (error) {
+                    console.error('Screenshot API error:', error);
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: error.message
+                    }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            });
         
-        // 批量截图 API 路由
-        router.post('/api/screenshots/batch', async (request) => {
-            try {
-                const requestBody = await request.json();
-                const { urls } = requestBody;
-                
-                if (!urls || !Array.isArray(urls)) {
+            // 批量截图 API 路由
+            router.post('/api/screenshots/batch', async (request) => {
+                try {
+                    const requestBody = await request.json();
+                    const { urls } = requestBody;
+                    
+                    if (!urls || !Array.isArray(urls)) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: 'Request body must contain a "urls" array'
+                        }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
+                    if (urls.length === 0) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: 'URLs array cannot be empty'
+                        }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
+                    if (urls.length > 10) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: 'Maximum 10 URLs allowed per batch request'
+                        }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
+                    const result = await screenshotService.generateBatchScreenshots(urls);
+                    
+                    // 如果有成功的截图，发送统计通知
+                    if (result.success && result.totalSuccessful > 0) {
+                        await barkService.sendScreenshotStats(result.totalSuccessful, 'batch');
+                    }
+                    
+                    return new Response(JSON.stringify(result), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                } catch (error) {
+                    console.error('Batch screenshot API error:', error);
+                    
+                    // 处理 JSON 解析错误
+                    if (error.message.includes('JSON')) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: 'Invalid JSON in request body'
+                        }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
                     return new Response(JSON.stringify({
                         success: false,
-                        error: 'Request body must contain a "urls" array'
+                        error: error.message
                     }), {
-                        status: 400,
+                        status: 500,
                         headers: { 'Content-Type': 'application/json' }
                     });
                 }
-                
-                if (urls.length === 0) {
-                    return new Response(JSON.stringify({
-                        success: false,
-                        error: 'URLs array cannot be empty'
-                    }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                }
-                
-                if (urls.length > 10) {
-                    return new Response(JSON.stringify({
-                        success: false,
-                        error: 'Maximum 10 URLs allowed per batch request'
-                    }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                }
-                
-                const result = await screenshotService.generateBatchScreenshots(urls);
-                
-                // 如果有成功的截图，发送统计通知
-                if (result.success && result.totalSuccessful > 0) {
-                    await barkService.sendScreenshotStats(result.totalSuccessful, 'batch');
-                }
-                
-                return new Response(JSON.stringify(result), {
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            } catch (error) {
-                console.error('Batch screenshot API error:', error);
-                
-                // 处理 JSON 解析错误
-                if (error.message.includes('JSON')) {
-                    return new Response(JSON.stringify({
-                        success: false,
-                        error: 'Invalid JSON in request body'
-                    }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                }
-                
-                return new Response(JSON.stringify({
-                    success: false,
-                    error: error.message
-                }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-        });
+            });
         
-        // 健康检查路由
-         router.get('/health', async (request) => {
-             const url = new URL(request.url);
-             const shouldNotify = url.searchParams.get('notify') === 'true';
-             const isStartup = url.searchParams.get('startup') === 'true';
-             
-             const healthData = {
-                 status: 'ok',
-                 timestamp: new Date().toISOString(),
-                 service: 'screenshot-worker',
-                 version: '2.0.0',
-                 features: ['single-screenshot', 'batch-screenshot', 'bark-notifications']
-             };
-             
-             // 如果需要发送通知
-             if (shouldNotify && !isStartup) {
-                 await barkService.sendServiceStatus('healthy', '服务运行正常，所有功能可用');
-             }
-             
-             return new Response(JSON.stringify(healthData), {
-                 headers: { 'Content-Type': 'application/json' }
-             });
-         });
+            // 健康检查路由
+            router.get('/health', async (request) => {
+                const url = new URL(request.url);
+                const shouldNotify = url.searchParams.get('notify') === 'true';
+                const isStartup = url.searchParams.get('startup') === 'true';
+                
+                const healthData = {
+                    status: 'ok',
+                    timestamp: new Date().toISOString(),
+                    service: 'screenshot-worker',
+                    version: '2.0.0',
+                    features: ['single-screenshot', 'batch-screenshot', 'bark-notifications']
+                };
+                
+                // 如果需要发送通知
+                if (shouldNotify && !isStartup) {
+                    await barkService.sendServiceStatus('healthy', '服务运行正常，所有功能可用');
+                }
+                
+                return new Response(JSON.stringify(healthData), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            });
         
             // 处理请求
             return await router.handle(request, env);
